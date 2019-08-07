@@ -20,30 +20,31 @@ class MainActivity : AppCompatActivity() {
     private val contextSource = ArrayList<String>()  //контекст источник
     private val contextTarget = ArrayList<String>()  //контекст перевод
 
+    // implementation 'org.jsoup:jsoup:1.12.1'   (Библиотека JSOUP)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val myTask = MyTask()
-        myTask.execute("go") //Слово
 
-
+        val reversoContext = ReversoContext()
+        reversoContext.execute("home", "английский", "русский")   //Переменные: слово; язык источник; язык перевод.
     }
 
 
-    internal inner class MyTask : AsyncTask<String, Void, Void>() {
-
+    internal inner class ReversoContext : AsyncTask<String, Void, Void>() {
         override fun doInBackground(vararg strings: String): Void? {
             var doc: Document? = null
-            var word: String
-            word = strings[0]
+            var word = strings[0]
+            var langSource = strings[1]
+            var langTarget = strings[2]
 
             try {
-                doc = Jsoup.connect("https://context.reverso.net/перевод/английский-русский/$word").get()
+                doc = Jsoup.connect("https://context.reverso.net/перевод/$langSource-$langTarget/$word").get()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
+
 
             // Получение переводов слова
             val element = doc!!.getElementsByClass("translation")
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity() {
                 partOfSpeech.add(el1[i].attr("title"))
             }
 
+
             // Получение контекста (источник)
             val con = doc.getElementById("examples-content")
             val con2 = con.getElementsByClass("src ltr")
@@ -74,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                 contextSource.add(con3[i].text())
             }
 
+
             // Получение контекста (перевод)
             val cont = doc.getElementById("examples-content")
             val cont2 = cont.getElementsByClass("trg ltr")
@@ -82,10 +85,8 @@ class MainActivity : AppCompatActivity() {
             for (i in cont3.indices) {
                 contextTarget.add(cont3[i].text())
             }
-
             return null
         }
-
     }
 
 
